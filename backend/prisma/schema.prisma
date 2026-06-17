@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -------------------------------------------------------------
+// Modèles de Base de Données (Sécurité et Typage Fort)
+// -------------------------------------------------------------
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // Sera haché avec Bcrypt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  routers   Router[]
+}
+
+model Router {
+  id           String   @id @default(uuid())
+  adminId      String
+  name         String
+  ipAddress    String
+  apiPort      Int      @default(8728)
+  apiUser      String
+  apiPassword  String   // Mot de passe chiffré avant stockage
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  admin        Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  tariffs      Tariff[]
+  transactions Transaction[]
+}
+
+model Tariff {
+  id          String   @id @default(uuid())
+  routerId    String
+  name        String   // ex: "Forfait 2 Heures"
+  price       Float    // ex: 100
+  profileName String   // Nom exact du profil dans MikroTik (ex: "2H_Profile")
+  duration    Int      // Durée en minutes (ex: 120)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  router      Router   @relation(fields: [routerId], references: [id], onDelete: Cascade)
+  vouchers    Voucher[]
+}
+
+model Transaction {
+  id             String   @id @default(uuid())
+  routerId       String
+  paymentRef     String   @unique // Référence Monetbil
+  amount         Float
+  phoneNumber    String
+  status         String   @default("PENDING") // PENDING, SUCCESS, FAILED
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  router         Router   @relation(fields: [routerId], references: [id])
+  voucher        Voucher?
+}
+
+model Voucher {
+  id            String   @id @default(uuid())
+  tariffId      String
+  transactionId String?  @unique
+  code          String   @unique // Le code PIN généré pour le client
+  status        String   @default("ACTIVE") // ACTIVE, EXPIRED
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tariff        Tariff   @relation(fields: [tariffId], references: [id])
+  transaction   Transaction? @relation(fields: [transactionId], references: [id])
+}
