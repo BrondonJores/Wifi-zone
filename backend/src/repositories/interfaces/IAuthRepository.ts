@@ -1,6 +1,6 @@
-import { Admin } from '@prisma/client';
+import { Admin, Prisma } from '@prisma/client';
 
 export interface IAuthRepository {
   findByEmail(email: string): Promise<Admin | null>;
-  create(data: Omit<Admin, 'id' | 'createdAt' | 'updatedAt'>): Promise<Admin>;
+  create(data: Prisma.AdminCreateInput): Promise<Admin>;
 }

@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { IAuthService } from './interfaces/IAuthService';
 import { IAuthRepository } from '../repositories/interfaces/IAuthRepository';
@@ -9,6 +9,11 @@ export class AuthService implements IAuthService {
   // Injection de dépendance (SOLID)
   constructor(authRepository: IAuthRepository) {
     this.authRepository = authRepository;
+  }
+
+  async getAdminById(id: string): Promise<any> {
+    const { prisma } = await import('../lib/prisma');
+    return prisma.admin.findUnique({ where: { id } });
   }
 
   async register(data: any) {

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: '/api', // Redirigé par le proxy Vite (vite.config.ts) vers http://localhost:3000/api
+  baseURL: import.meta.env.VITE_API_URL || '/api', // En production, Nginx redirige automatiquement /api vers le backend
   withCredentials: true, // IMPORTANT: Permet d'envoyer et recevoir les cookies HttpOnly (JWT)
   headers: {
     'Content-Type': 'application/json'

@@ -14,7 +14,7 @@ export class MonetbilService implements IPaymentService {
   /**
    * Appelle l'API Widget v2.1 de Monetbil pour générer l'URL de paiement
    */
-  async initiatePayment(amount: number, phoneNumber: string, paymentRef: string, notifyUrl: string): Promise<string> {
+  async initiatePayment(amount: number, phoneNumber: string, paymentRef: string, notifyUrl: string, returnUrl: string): Promise<string> {
     try {
       const url = `https://api.monetbil.com/widget/v2.1/${this.serviceKey}`;
       
@@ -23,6 +23,7 @@ export class MonetbilService implements IPaymentService {
         phone: phoneNumber,
         payment_ref: paymentRef,
         notify_url: notifyUrl,
+        return_url: returnUrl,
         // Optionnel : Bloquer le numéro pour éviter que le client le modifie
         phone_lock: 'true'
       });
@@ -47,16 +48,20 @@ export class MonetbilService implements IPaymentService {
   }
 
   /**
-   * Vérifie cryptographiquement que le Webhook vient bien de Monetbil (Sécurité)
+   * Vérifie cryptographiquement que le Webhook vient bien de Monetbil (HMAC-SHA256)
    */
   verifyWebhookSignature(payload: any, signature: string): boolean {
     if (!signature || !this.serviceSecret) return false;
     
-    // Selon la doc Monetbil, la vérification peut se faire via un token ou un hash MD5/SHA256
-    // Exemple avec une vérification de hachage standard MD5 (à ajuster selon la doc finale exacte)
+    // Concaténation recommandée par les standards (à adapter selon Monetbil, souvent c'est le raw body ou des champs spécifiques)
     const dataString = `${payload.payment_ref}${payload.transaction_id}${this.serviceSecret}`;
-    const hash = crypto.createHash('md5').update(dataString).digest('hex');
     
-    return hash === signature;
+    // Utilisation de HMAC-SHA256 (plus sécurisé que MD5)
+    const hash = crypto.createHmac('sha256', this.serviceSecret).update(dataString).digest('hex');
+    
+    // Dans ce code on tolère temporairement l'ancien MD5 pour rétrocompatibilité si Monetbil l'envoie
+    const legacyHash = crypto.createHash('md5').update(dataString).digest('hex');
+    
+    return hash === signature || legacyHash === signature;
   }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Wifi, Lock, Mail, Loader2 } from 'lucide-react';
 import apiClient from '../api/client';
+import { useAppStore } from '../store/useAppStore';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -10,6 +11,7 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { setUser } = useAppStore();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,10 +19,12 @@ export default function Login() {
     setLoading(true);
 
     try {
-      // Appel à l'API Backend que nous avons créée (SOLID & Sécurisée)
+      // Appel à l'API Backend (SOLID & Sécurisée)
       const res = await apiClient.post('/auth/login', { email, password });
       
       if (res.data.success) {
+        // Stocker l'utilisateur dans Zustand (persiste dans localStorage)
+        setUser(res.data.admin);
         // Le JWT est automatiquement stocké dans le cookie HttpOnly par le backend
         navigate('/');
       }

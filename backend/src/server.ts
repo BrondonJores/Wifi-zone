@@ -3,6 +3,8 @@ import helmet from 'helmet';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+import { requireAuth } from './middlewares/auth.middleware';
 
 // Load environment variables
 dotenv.config();
@@ -37,15 +39,30 @@ app.use(limiter);
 // 4. Body Parser (Limit payload size to avoid DoS)
 app.use(express.json({ limit: '10kb' }));
 
+// 5. Cookie Parser
+app.use(cookieParser());
+
 // ==========================================
 // ROUTES
 // ==========================================
 
 import authRoutes from './routes/auth.routes';
 import paymentRoutes from './routes/payment.routes';
+import routerRoutes from './routes/router.routes';
+import tariffRoutes from './routes/tariff.routes';
+import transactionRoutes from './routes/transaction.routes';
+import voucherRoutes from './routes/voucher.routes';
+import statsRoutes from './routes/stats.routes';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/payments', paymentRoutes);
+
+// Protected routes
+app.use('/api/routers', requireAuth, routerRoutes);
+app.use('/api/tariffs', requireAuth, tariffRoutes);
+app.use('/api/transactions', requireAuth, transactionRoutes);
+app.use('/api/vouchers', requireAuth, voucherRoutes);
+app.use('/api/stats', requireAuth, statsRoutes);
 
 app.get('/health', (req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', message: 'SaaS Backend is running securely.' });

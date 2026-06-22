@@ -23,3 +23,22 @@
     @apply w-full bg-slate-900 border border-dark-border rounded-lg px-4 py-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area, .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+  /* Cacher la sidebar et header pendant l'impression */
+  aside, header {
+    display: none !important;
+  }
+}

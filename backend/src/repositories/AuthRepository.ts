@@ -1,5 +1,5 @@
-import { Admin } from '@prisma/client';
-import { prisma } from '../../lib/prisma';
+import { Admin, Prisma } from '@prisma/client';
+import { prisma } from '../lib/prisma';
 import { IAuthRepository } from './interfaces/IAuthRepository';
 
 export class AuthRepository implements IAuthRepository {
@@ -7,7 +7,7 @@ export class AuthRepository implements IAuthRepository {
     return prisma.admin.findUnique({ where: { email } });
   }
 
-  async create(data: Omit<Admin, 'id' | 'createdAt' | 'updatedAt'>): Promise<Admin> {
+  async create(data: Prisma.AdminCreateInput): Promise<Admin> {
     return prisma.admin.create({ data });
   }
 }
